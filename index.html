@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Chat App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: lightcoral;
+        }
+
+        .chatBox {
+            width: 300px;
+            height: 500px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: lightseagreen;
+            display: none;
+            flex-direction: column;
+        }
+
+        .chatList {
+            width: 100%;
+            height: calc(100% - 100px);
+            background-color: lightblue;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+        }
+
+        .me {
+            width: 51%;
+            height: auto;
+            align-self: flex-end;
+            background-color: darkslategrey;
+            color: white;
+            padding: 5px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .other {
+            width: 51%;
+            height: auto;
+            align-self: flex-start;
+            background-color: goldenrod;
+            color: black;
+            padding: 5px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .textArea {
+            width: 100%;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input {
+            width: 70%;
+            height: 40px;
+            padding: 0 10px;
+            border-radius: 50px;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background-color: darkslategrey;
+            color: white;
+        }
+
+        .loginBox {
+            width: 300px;
+            height: 150px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: lightseagreen;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loginBox input {
+            width: 80%;
+            height: 30px;
+            margin-bottom: 10px;
+            padding: 0 10px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+        }
+
+        .loginBox button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: darkslategrey;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loginBox">
+        <input id="usernameInput" placeholder="Enter your name (ayush/akhilesh)">
+        <button id="loginButton">Start Chat</button>
+    </div>
+
+    <div class="chatBox">
+        <h3>Client Chat</h3>
+        <div class="chatList" id="chatList"></div>
+        <div class="textArea">
+            <input id="messageInput" placeholder="Write something..">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let sender;
+        let recipient;
+
+        document.getElementById('loginButton').addEventListener('click', function () {
+            sender = document.getElementById('usernameInput').value.trim().toLowerCase();
+            if (sender === 'ayush' || sender === 'akhilesh') {
+                recipient = sender === 'ayush' ? 'akhilesh' : 'ayush';
+                document.querySelector('.loginBox').style.display = 'none';
+                document.querySelector('.chatBox').style.display = 'flex';
+            } else {
+                alert('Please enter a valid name (ayush/akhilesh)');
+            }
+        });
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+            if (messageText !== "") {
+                const message = {
+                    sender: sender,
+                    recipient: recipient,
+                    message: messageText
+                };
+                socket.emit('chat message', message);
+                messageInput.value = '';
+            }
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        socket.on('chat message', function (msg) {
+            const chatList = document.getElementById('chatList');
+            const newMessage = document.createElement('div');
+            newMessage.className = msg.sender === sender ? 'me' : 'other';
+            newMessage.textContent = `${msg.sender} (${msg.timestamp}): ${msg.message}`;
+            chatList.appendChild(newMessage);
+            chatList.scrollTop = chatList.scrollHeight;
+        });
+    </script>
+</body>
+
+</html>
