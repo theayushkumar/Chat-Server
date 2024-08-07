@@ -25,6 +25,23 @@ db.connect(err => {
 // Serve static files from the current directory
 app.use(express.static(__dirname));
 
+// Add this route to fetch previous messages
+app.get('/messages/:user1/:user2', (req, res) => {
+    const { user1, user2 } = req.params;
+
+    // Query to get messages between two users
+    const query = `
+        SELECT * FROM messages
+        WHERE (sender = ? AND recipient = ?)
+        OR (sender = ? AND recipient = ?)
+        ORDER BY timestamp ASC
+    `;
+    db.query(query, [user1, user2, user2, user1], (err, results) => {
+        if (err) throw err;
+        res.json(results);
+    });
+});
+
 // Handle socket connections
 io.on('connection', (socket) => {
     console.log('New user connected');

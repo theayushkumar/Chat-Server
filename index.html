@@ -150,6 +150,7 @@
                 recipient = sender === 'ayush' ? 'akhilesh' : 'ayush';
                 document.querySelector('.loginBox').style.display = 'none';
                 document.querySelector('.chatBox').style.display = 'flex';
+                fetchMessages();
             } else {
                 alert('Please enter a valid name (ayush/akhilesh)');
             }
@@ -179,6 +180,21 @@
             chatList.appendChild(newMessage);
             chatList.scrollTop = chatList.scrollHeight;
         });
+
+        function fetchMessages() {
+            fetch(`/messages/${sender}/${recipient}`)
+                .then(response => response.json())
+                .then(messages => {
+                    const chatList = document.getElementById('chatList');
+                    messages.forEach(msg => {
+                        const newMessage = document.createElement('div');
+                        newMessage.className = msg.sender === sender ? 'me' : 'other';
+                        newMessage.textContent = `${msg.sender} (${msg.timestamp}): ${msg.message}`;
+                        chatList.appendChild(newMessage);
+                    });
+                    chatList.scrollTop = chatList.scrollHeight;
+                });
+        }
     </script>
 </body>
 
